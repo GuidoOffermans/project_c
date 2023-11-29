@@ -1,5 +1,0 @@
-0
-1620 107606750 1701126092284581384 bd82fc217e3be5348ae383d9cd8cb43c 0 /Users/guidooffermans/GameDev/project_c/raylib-game-template-main/src/main.cpp
-1620 107606750 1701126092284581384 bd82fc217e3be5348ae383d9cd8cb43c 0 /Users/guidooffermans/GameDev/project_c/raylib-game-template-main/src/main.cpp
-124734 107559707 1700044250000000000 0f7c66bfed3d3c2681fa49082ec88258 0 /usr/local/Cellar/raylib/5.0/include/raylib.h
-1704 107636536 1691086923000000000 4cc357367abde8a36a43490e31617861 1 include/stdarg.h
