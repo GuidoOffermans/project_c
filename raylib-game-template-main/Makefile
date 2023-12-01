@@ -26,14 +26,18 @@
 # Define required environment variables
 #------------------------------------------------------------------------------------------------
 # Define target platform: PLATFORM_DESKTOP, PLATFORM_RPI, PLATFORM_DRM, PLATFORM_ANDROID, PLATFORM_WEB
-PLATFORM              ?= PLATFORM_DESKTOP
+PLATFORM              ?= PLATFORM_WEB
+
+# Define output directory
+OUTPUT_DIR = ./build
+
 
 # Define project variables
 PROJECT_NAME          ?= raylib_game
 PROJECT_VERSION       ?= 1.0
 PROJECT_BUILD_PATH    ?= .
 
-RAYLIB_PATH           ?= ../../raylib
+RAYLIB_PATH           ?= ../raylib
 
 # Locations of raylib.h and libraylib.a/libraylib.so
 # NOTE: Those variables are only used for PLATFORM_OS: LINUX, BSD
@@ -52,7 +56,7 @@ USE_WAYLAND_DISPLAY   ?= FALSE
 
 # PLATFORM_WEB: Default properties
 BUILD_WEB_ASYNCIFY    ?= FALSE
-BUILD_WEB_SHELL       ?= minshell.html
+BUILD_WEB_SHELL       ?= templates/minshell.html
 BUILD_WEB_HEAP_SIZE   ?= 134217728
 BUILD_WEB_RESOURCES   ?= TRUE
 BUILD_WEB_RESOURCES_PATH  ?= resources
@@ -225,7 +229,7 @@ else
             CFLAGS += -Os
         endif
     else
-        CFLAGS += -s -O2
+        CFLAGS += -O2
     endif
 endif
 
@@ -399,16 +403,10 @@ endif
 
 # Define source code object files required
 #------------------------------------------------------------------------------------------------
-PROJECT_SOURCE_FILES ?= \
-    raylib_game.c \
-    screen_logo.c \
-    screen_title.c \
-    screen_options.c \
-    screen_gameplay.c \
-    screen_ending.c
+PROJECT_SOURCE_FILES := $(wildcard src/*.c)
 
 # Define all object files from source files
-OBJS = $(patsubst %.c, %.o, $(PROJECT_SOURCE_FILES))
+OBJS = $(patsubst src/%.c, $(OUTPUT_DIR)/%.o, $(PROJECT_SOURCE_FILES))
 
 
 # Define processes to execute
@@ -424,20 +422,24 @@ endif
 
 # Default target entry
 # NOTE: We call this Makefile target or Makefile.Android target
-all:
-	$(MAKE) $(MAKEFILE_PARAMS)
+all: $(PROJECT_NAME)
 
 # Project target defined by PROJECT_NAME
-$(PROJECT_NAME): $(OBJS)
-	$(CC) -o $(PROJECT_NAME)$(EXT) $(OBJS) $(CFLAGS) $(INCLUDE_PATHS) $(LDFLAGS) $(LDLIBS) -D$(PLATFORM)
+
+$(PROJECT_NAME): $(OBJS) | $(OUTPUT_DIR)
+	mkdir -p $(OUTPUT_DIR)
+	$(CC) -o $(OUTPUT_DIR)/$(PROJECT_NAME)$(EXT) $(OBJS) $(CFLAGS) $(INCLUDE_PATHS) $(LDFLAGS) $(LDLIBS) -D$(PLATFORM)
+
 
 # Compile source files
 # NOTE: This pattern will compile every module defined on $(OBJS)
-%.o: %.c
+$(OUTPUT_DIR)/%.o: src/%.c | $(OUTPUT_DIR)
+	mkdir -p $(OUTPUT_DIR)
 	$(CC) -c $< -o $@ $(CFLAGS) $(INCLUDE_PATHS) -D$(PLATFORM)
 
+
 run:
-	$(MAKE) $(MAKEFILE_PARAMS)
+	./$(OUTPUT_DIR)/$(PROJECT_NAME)$(EXT)
 
 ifeq ($(PLATFORM),PLATFORM_DESKTOP)
     ifeq ($(PLATFORM_OS),WINDOWS)
@@ -454,8 +456,9 @@ endif
 .PHONY: clean_shell_cmd clean_shell_sh
 
 # Clean everything
-clean:	clean_shell_$(PLATFORM_SHELL)
+clean: clean_shell_$(PLATFORM_SHELL)
 	@echo Cleaning done
+	rm -f $(OUTPUT_DIR)/*.o $(OUTPUT_DIR)/$(PROJECT_NAME)$(EXT)
 
 clean_shell_sh:
 ifeq ($(PLATFORM),PLATFORM_DESKTOP)
